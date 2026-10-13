@@ -1069,3 +1069,45 @@ html[data-theme="dark"] .dish-name,
 html[data-theme="dark"] .dish-price {
   color: var(--ink) !important;
 }
+
+/* Fix CC-02: Dark mode text contrast (both manual toggle and system dark mode) */
+html[data-theme="dark"] .dish-name,
+html[data-theme="dark"] .name-btn,
+html[data-theme="dark"] .dish-price {
+  color: var(--ink) !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html:not([data-theme="light"]) .dish-name,
+  html:not([data-theme="light"]) .name-btn,
+  html:not([data-theme="light"]) .dish-price {
+    color: var(--ink) !important;
+  }
+}
+
+/* Fix CC-05: Keep category bar sticky on mobile screens */
+@media (max-width: 768px) {
+  .filters-bar,
+  .filters,
+  .filter-bar,
+  .filters-wrap {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 99 !important;
+    background: var(--bg) !important;
+  }
+}
+
+/* Fix CC-03: Single column on phone viewports to prevent horizontal overflow */
+@media (max-width: 500px) {
+  .menu-grid {
+    grid-template-columns: 1fr !important;
+  }
+  .dish-card {
+    min-width: 0 !important;
+  }
+  .name-btn {
+    width: 100% !important;
+    white-space: normal !important;
+  }
+}
