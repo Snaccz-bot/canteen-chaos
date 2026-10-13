@@ -90,6 +90,9 @@ function applyCoupon(code, lines, coupons, { slot = null, now = new Date() } = {
   if (coupon.usesLeft <= 0) {
     return { valid: false, discount: 0, reason: 'This coupon is fully used' };
   }
+  if (coupon.expiresAt && new Date(coupon.expiresAt) < new Date(now)) {
+    return { valid: false, discount: 0, reason: `${coupon.code} has expired` };
+  }
 
   const subtotal = sumLines(lines);
   if (subtotal < coupon.minOrder) {
