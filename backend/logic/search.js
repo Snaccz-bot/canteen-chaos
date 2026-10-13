@@ -13,16 +13,6 @@ function tokenize(text) {
     .filter((t) => t.length > 1 && !STOP_WORDS.has(t));
 }
 
-/**
- * How well does one dish match the query? Higher is better, 0 means no match.
- *
- * name starts with the term   +10
- * a word in the name starts with it  +6
- * name contains it            +4
- * category matches            +3
- * a tag matches               +2
- * small nudges for available, in-slot and well rated dishes
- */
 function scoreDish(dish, terms) {
   if (terms.length === 0) return 1;
 
@@ -47,7 +37,6 @@ function scoreDish(dish, terms) {
     score += best;
   });
 
-  // every term has to hit something, otherwise "paneer pizza" matches paneer
   if (!matchedAll) return 0;
 
   if (dish.stock > 0) score += 1;
@@ -56,7 +45,6 @@ function scoreDish(dish, terms) {
   return score;
 }
 
-/** Search + rank. Returns dishes, best first. */
 function searchDishes(menu, query) {
   const terms = tokenize(query);
   if (terms.length === 0) return menu.slice();
@@ -68,7 +56,6 @@ function searchDishes(menu, query) {
     .map((row) => row.dish);
 }
 
-/** Short list for the suggestions dropdown. */
 function suggest(menu, query, limit = 6) {
   return searchDishes(menu, query)
     .slice(0, limit)
@@ -76,8 +63,8 @@ function suggest(menu, query, limit = 6) {
 }
 
 const SORTERS = {
-  'price-asc': (a, b) => b.price - a.price,
-  'price-desc': (a, b) => a.price - b.price,
+  'price-asc': (a, b) => a.price - b.price,
+  'price-desc': (a, b) => b.price - a.price,
   'rating-desc': (a, b) => b.rating - a.rating,
   'name-asc': (a, b) => a.name.localeCompare(b.name),
   'prep-asc': (a, b) => a.prepMinutes - b.prepMinutes,
@@ -90,7 +77,6 @@ function sortDishes(dishes, sort) {
   return dishes.slice().sort(fn);
 }
 
-/** Cut a list into one page and say whether there is another. */
 function paginate(list, page = 1, limit = 12) {
   const pageNum = Math.max(1, parseInt(page, 10) || 1);
   const perPage = Math.min(48, Math.max(1, parseInt(limit, 10) || 12));
@@ -98,7 +84,7 @@ function paginate(list, page = 1, limit = 12) {
   const items = list.slice(start, start + perPage);
 
   return {
-    items: list,
+    items,
     page: pageNum,
     limit: perPage,
     total: list.length,
