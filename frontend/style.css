@@ -1059,3 +1059,13 @@ body.is-offline .site-header { filter: grayscale(0.4); }
   .price-filter input { flex: 1; }
   .staff-controls { width: 100%; justify-content: space-between; }
 }
+/* Fix CC-01: elevate search suggestions above other stacking contexts */
+.search-wrap {
+  z-index: 1000 !important;
+}
+
+/* Fix CC-02: ensure dish title and price contrast in dark mode */
+html[data-theme="dark"] .dish-name,
+html[data-theme="dark"] .dish-price {
+  color: var(--ink) !important;
+}
