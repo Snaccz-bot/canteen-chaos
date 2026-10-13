@@ -1,7 +1,4 @@
 // logic/validation.js
-// Everything that decides whether an order is allowed to exist, plus the
-// stock bookkeeping that goes with it.
-
 const { findDish } = require('./pricing');
 const { isServedNow, isCanteenOpen, blockedReason } = require('./availability');
 const scheduling = require('./scheduling');
@@ -12,7 +9,6 @@ const MAX_UNITS_PER_ORDER = 30;
 const ROOM_PATTERN = /^[A-H]-[0-9]{3}$/;
 const MAX_NOTE = 140;
 
-/** One dish line. Returns a list of errors, empty when fine. */
 function validateLine(item, index, menu, now, seen) {
   const where = `items[${index}]`;
   const errors = [];
@@ -38,14 +34,11 @@ function validateLine(item, index, menu, now, seen) {
   if (blocked && isServedNow(dish, now) === false) errors.push(`${dish.name}: ${blocked}`);
   else if (dish.disabled) errors.push(`${dish.name} is off the menu today`);
   else if (Number(dish.stock) <= 0) errors.push(`${dish.name} is sold out`);
+  else if (qty > Number(dish.stock)) errors.push(`Only ${dish.stock} ${dish.name} left in stock`);
 
   return errors;
 }
 
-/**
- * Validate a whole order.
- * options: { now, orders } - orders is needed to check pickup slot capacity.
- */
 function validateOrder(order, menu, { now = new Date(), orders = [] } = {}) {
   const errors = [];
 
@@ -97,10 +90,6 @@ function validateOrder(order, menu, { now = new Date(), orders = [] } = {}) {
   return { valid: errors.length === 0, errors };
 }
 
-/**
- * Take stock off the menu for a confirmed order.
- * Re-checks every line first, so two requests cannot take the same last plate.
- */
 function reserveStock(items, menu) {
   const errors = [];
   const next = menu.map((d) => ({ ...d }));
@@ -108,6 +97,9 @@ function reserveStock(items, menu) {
   items.forEach((item) => {
     const dish = next.find((d) => d.id === Number(item.dishId));
     if (!dish) return errors.push(`dish ${item.dishId} vanished`);
+    if (dish.stock < item.qty) {
+      return errors.push(`Not enough stock for ${dish.name} (${dish.stock} left)`);
+    }
     dish.stock -= item.qty;
   });
 
@@ -115,12 +107,11 @@ function reserveStock(items, menu) {
   return { ok: true, menu: next, errors: [] };
 }
 
-/** Put stock back when an order is cancelled. */
 function releaseStock(items, menu) {
   return menu.map((dish) => {
     const line = items.find((i) => Number(i.dishId) === dish.id);
     if (!line) return dish;
-    return { ...dish, stock: dish.stock - line.qty };
+    return { ...dish, stock: dish.stock + line.qty };
   });
 }
 
